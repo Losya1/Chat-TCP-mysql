@@ -64,10 +64,10 @@ int main() {
 		cin >> x;
 		switch (x) {
 		case('1'):
-			chat.registration();
+			chat.registration(ClientSock);
 			break;
 		case('2'):
-			chat.authorized_user(chat.login(), ClientSock);
+			chat.authorized_user(chat.login(ClientSock), ClientSock);
 			break;
 		case('3'):
 			b = false;

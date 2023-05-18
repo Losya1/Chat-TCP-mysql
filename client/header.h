@@ -11,14 +11,14 @@ using namespace std;
 
 const char SERVER_IP[] = "127.0.0.1";
 const short SERVER_PORT_NUM = 7777;
-const short BUFF_SIZE = 1024;
+const short BUFF_SIZE = 512;
 
 class User {
 private:
 	vector<pair<string, string>> user_arr = {};
 	vector <string> mes_arr;
 public:
-	void registration();
-	string login();
+	void registration(SOCKET ClientSock);
+	string login(SOCKET ClientSock);
 	void authorized_user(const string name, SOCKET ClientSock);
 };

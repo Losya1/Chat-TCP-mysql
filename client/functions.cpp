@@ -2,41 +2,64 @@
 
 using namespace std;
 
-void User::registration() {
-	string x, y;
+void User::registration(SOCKET ClientSock) {
+	vector <char> Username(BUFF_SIZE), Password(BUFF_SIZE), Server_message(BUFF_SIZE);
+	short x = 0, y = 0, z = 0;
 	cout << "Enter username" << endl;
-	cin >> x;
+	cin >> Username.data();
+	Username.insert(Username.begin(), '1');
+	x = send(ClientSock, Username.data(), BUFF_SIZE, 0);
+
 	cout << "Enter password" << endl;
-	cin >> y;
-	cout << "Password entered" << endl;
-	pair<string, string> p1 = make_pair(x, y);
-	for (auto& p : user_arr) {
-		if (p1.first == p.first) {
-			cout << "error" << endl;
-			return;
-		}
+	cin >> Password.data();
+	Password.insert(Password.begin(), '2');
+	y = send(ClientSock, Password.data(), BUFF_SIZE, 0);
+
+	if (x || y == SOCKET_ERROR) {
+		cout << "Can't send message to Server. Error # " << WSAGetLastError() << endl;
+		return;
 	}
-	cout << "Registration complete" << endl;
-	user_arr.emplace_back(p1);
+
+	z = recv(ClientSock, Server_message.data(), BUFF_SIZE, 0);
+
+	if (z == SOCKET_ERROR) {
+		cout << "Can't receive message from Server. Error # " << WSAGetLastError() << endl;
+		return;
+	}
+
+	cout << Server_message.data() << endl;
 }
 
-string User::login() {
-	string x, y;
+string User::login(SOCKET ClientSock) {
+	vector <char> Username(BUFF_SIZE), Password(BUFF_SIZE), Server_message(BUFF_SIZE);
+	short x = 0, y = 0, z = 0;
 	cout << "Enter username" << endl;
-	cin >> x;
+	cin >> Username.data();
+	Username.insert(Username.begin(), '3');
+	x = send(ClientSock, Username.data(), BUFF_SIZE, 0);
+
 	cout << "Enter password" << endl;
-	cin >> y;
-	for (auto& p : user_arr) {
-		if (x == p.first && y == p.second) {
-			return p.first;
-		}
+	cin >> Password.data();
+	Password.insert(Password.begin(), '4');
+	y = send(ClientSock, Password.data(), BUFF_SIZE, 0);
+
+	if (x || y == SOCKET_ERROR) {
+		cout << "Can't send message to Server. Error # " << WSAGetLastError() << endl;
+		return;
 	}
-	cout << "error" << endl;
-	return "err";
+
+	z = recv(ClientSock, Server_message.data(), BUFF_SIZE, 0);
+
+	if (z == SOCKET_ERROR) {
+		cout << "Can't receive message from Server. Error # " << WSAGetLastError() << endl;
+		return;
+	}
+
+	return "error";
 }
 
 void User::authorized_user(const string name, SOCKET ClientSock) {
-	if (name == "err") {
+	if (name == "error") {
 		return;
 	}
 	cout << "Hello " << name << endl
@@ -53,10 +76,9 @@ void User::authorized_user(const string name, SOCKET ClientSock) {
 			while (1) {
 				cout << "Write message" << endl;
 				cin >> Client_message.data();
-				Client_message.insert(Client_message.begin(), '2');
+				Client_message.insert(Client_message.begin(), '4');
 
 				cmes = send(ClientSock, Client_message.data(), BUFF_SIZE, 0);
-				cout << "Message: " << Client_message.data() << endl;
 
 				if (cmes == SOCKET_ERROR) {
 					cout << "Can't send message to Server. Error # " << WSAGetLastError() << endl;
@@ -69,9 +91,8 @@ void User::authorized_user(const string name, SOCKET ClientSock) {
 					cout << "Can't receive message from Server. Error # " << WSAGetLastError() << endl;
 					break;
 				}
-				else {
-					cout << name << ": " << Server_message.data() << endl;
-				}
+
+				cout << name << ": " << Server_message.data() << endl;
 				break;
 		case('2'):
 			cout << "Write the name of the person to send the message to." << endl;

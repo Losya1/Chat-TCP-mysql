@@ -11,7 +11,7 @@ using namespace std;
 
 const char SERVER_IP[] = "127.0.0.1";
 const short SERVER_PORT_NUM = 7777;
-const short BUFF_SIZE = 512;
+const short BUFF_SIZE = 256;
 
 class User {
 private:
@@ -19,6 +19,6 @@ private:
 	vector <string> mes_arr;
 public:
 	void registration(SOCKET ClientSock);
-	string login(SOCKET ClientSock);
+	string login();
 	void authorized_user(const string name, SOCKET ClientSock);
 };

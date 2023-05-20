@@ -67,7 +67,7 @@ int main() {
 			chat.registration(ClientSock);
 			break;
 		case('2'):
-			chat.authorized_user(chat.login(ClientSock), ClientSock);
+			chat.authorized_user(chat.login(), ClientSock);
 			break;
 		case('3'):
 			b = false;

@@ -11,7 +11,7 @@ using namespace std;
 int main() {
 	const char IP_SERV[] = "127.0.0.1";			
 	const int PORT_NUM = 7777;			
-	const short BUFF_SIZE = 1024;		
+	const short BUFF_SIZE = 256;
 	int erStat;								
 	MYSQL_RES* res;
 	MYSQL_ROW row;
@@ -112,47 +112,50 @@ int main() {
 	mysql_init(&mysql);
 
 	if (&mysql == NULL) {
-		// Если дескриптор не получен — выводим сообщение об ошибке
 		cout << "Error: can't create MySQL-descriptor" << endl;
 	}
 
-	// Подключаемся к серверу
-	if (!mysql_real_connect(&mysql, "localhost", "root", "feg123", "testdb", 0, NULL, 0)) {
-		// Если нет возможности установить соединение с БД выводим сообщение об ошибке
+	if (!mysql_real_connect(&mysql, "localhost", "root", "feg123", "chatDB", 0, NULL, 0)) {
 		cout << "Error: can't connect to database " << mysql_error(&mysql) << endl;
 	}
 	else {
-		// Если соединение успешно установлено выводим фразу — "Success!"
 		cout << "Success!" << endl;
 	}
 
 	mysql_set_character_set(&mysql, "utf8");
-	//Смотрим изменилась ли кодировка на нужную, по умолчанию идёт latin1
 	cout << "connection characterset: " << mysql_character_set_name(&mysql) << endl;
 
+
 	vector <char> Client_message(BUFF_SIZE);
-	short cmes = 0, smes = 0;
+	short smes = 0;
 	string x, y;
 	while (true) {
+
 		cout << "Waiting for the message" << endl;
+		recv(ClientConn, Client_message.data(), BUFF_SIZE, 0);
 
-		cmes = recv(ClientConn, Client_message.data(), BUFF_SIZE, 0);
-
-		if (Client_message.at(0) == '1') {
+		if (Client_message[0] == '1') {
 			Client_message.erase(Client_message.begin());
+			cout << Client_message.data() << endl;
 			x = Client_message.data();
 			mysql_query(&mysql, "INSERT INTO user(id, name) values(default, x)");
 		}
-
-		if (Client_message.at(0) == '2') {
+		
+		if (Client_message[0] == '2') {
 			Client_message.erase(Client_message.begin());
+
+			smes = send(ClientConn, Client_message.data(), BUFF_SIZE, 0);
+
+			if (smes == SOCKET_ERROR) {
+				cout << "Can't send message to Client. Error # " << WSAGetLastError() << endl;
+			}
+
+			cout << Client_message.data() << endl;
 			y = Client_message.data();
 			mysql_query(&mysql, "INSERT INTO user(id, name) values(default, y)");
-		}
 
-		if (Client_message.at(0) == '3') {
-			Client_message.erase(Client_message.begin());
-			mysql_query(&mysql, "SELECT username FROM user");
+			mysql_query(&mysql, "SELECT * FROM user");
+
 			if (res = mysql_store_result(&mysql)) {
 				while (row = mysql_fetch_row(res)) {
 					for (int i = 0; i < mysql_num_fields(res); i++) {
@@ -163,27 +166,14 @@ int main() {
 			}
 		}
 
-		if (Client_message.at(0) == '4') {
+		if (Client_message[0] == '4') {
 			Client_message.erase(Client_message.begin());
-			mysql_query(&mysql, "SELECT password FROM user");
-			if (res = mysql_store_result(&mysql)) {
-				while (row = mysql_fetch_row(res)) {
-					for (int i = 0; i < mysql_num_fields(res); i++) {
-						cout << row[i] << "  ";
-					}
-					cout << endl;
-				}
+			cout << Client_message.data() << endl;
+			smes = send(ClientConn, Client_message.data(), BUFF_SIZE, 0);
+
+			if (smes == SOCKET_ERROR) {
+				cout << "Can't send message to Client. Error # " << WSAGetLastError() << endl;
 			}
-		}
-
-		smes = send(ClientConn, Client_message.data(), BUFF_SIZE, 0);
-
-		if (smes == SOCKET_ERROR) {
-			cout << "Can't send message to Client. Error # " << WSAGetLastError() << endl;
-			closesocket(ServSock);
-			closesocket(ClientConn);
-			WSACleanup();
-			return 1;
 		}
 	}
 

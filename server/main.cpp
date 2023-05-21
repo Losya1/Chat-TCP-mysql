@@ -129,9 +129,8 @@ int main() {
 	vector <char> Client_message(BUFF_SIZE);
 	short smes = 0;
 	string x, y;
+	cout << "Waiting for the message" << endl;
 	while (true) {
-
-		cout << "Waiting for the message" << endl;
 		recv(ClientConn, Client_message.data(), BUFF_SIZE, 0);
 
 		if (Client_message[0] == '1') {
